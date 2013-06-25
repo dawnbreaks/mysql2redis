@@ -168,7 +168,7 @@ my_ulonglong redis_servers_set_v2(
 /**
  * redis_command
  * 
- * execute multiple redis command (ex: select 1\n set x 1\n)
+ * execute  redis command 
  */
 DLLEXP 
 my_bool redis_command_v2_init(
