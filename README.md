@@ -84,4 +84,4 @@ DELIMITER ;
 
    
 ## Performance test
-   In my poor labtop, 10,000 row data were put into redis in 0.4 second.
+   In my poor labtop, 10,000 row data were synced into redis in 0.4 second.
