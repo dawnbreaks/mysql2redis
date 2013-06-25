@@ -5,7 +5,7 @@ mysql2redis
 
 
 
-   When you use redis to cache data only(not persistent), you will face the issue that how to sync the newly modified data from mysql to the redis cache? This project aims provide a high performance redis udf to solve this issue.
+   When you use redis to cache data only(not persistent), you will face the issue that how to sync the newly modified data from mysql to the redis cache? This project aims to provide a high performance and stable redis udf to solve this issue.
    
 ## dependencies
    please download the dependencies below and compile/install it properly :
