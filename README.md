@@ -10,11 +10,11 @@ mysql2redis
 ## dependencies
    please download the dependencies below and compile/install it properly :
    
-   jemalloc(http://www.canonware.com/jemalloc/)
-   apr-1.4.6(http://apr.apache.org/download.cgi)
-   apr-util-1.5.2(http://apr.apache.org/download.cgi)
-   hiredis(https://github.com/redis/hiredis)
-   lib_mysqludf_json(https://github.com/mysqludf/lib_mysqludf_json)
+  * jemalloc(http://www.canonware.com/jemalloc/)
+  * apr-1.4.6(http://apr.apache.org/download.cgi)
+  * apr-util-1.5.2(http://apr.apache.org/download.cgi)
+  * hiredis(https://github.com/redis/hiredis)
+  * lib_mysqludf_json(https://github.com/mysqludf/lib_mysqludf_json)
    
    
 ## compile  
@@ -24,9 +24,9 @@ mysql2redis
   ```
    
 ## install redis udf  
-  please make sure that  the lib_mysqludf_redis_v2.so has been put into the mysql plugin dir. By the way, you examine where is the mysql plugin dir by run '''
+  please make sure that  the lib_mysqludf_redis_v2.so has been put into the mysql plugin dir. By the way, you can examine where is the mysql plugin dir by run '''
   mysql_config  --plugindir
-  ''', and connect to your mysql server, run the following command to install the the redis udf.
+  '''. and then connect to your mysql server, run the following command to install the the redis udf.
   ```sql
 DROP FUNCTION IF EXISTS redis_servers_set_v2;
 DROP FUNCTION IF EXISTS redis_command_v2;
@@ -50,7 +50,7 @@ select redis_servers_set_v2("192.168.0.118",6379);
 ```
 
 ## what's more
-   you should create a trigger which will left push the newly modified data to redis list juste as the following  example:
+   you should create a trigger which will lpush the newly modified data to redis list juste as the following  example:
    ```sql
 DELIMITER $$
 CREATE TRIGGER insert_trigger AFTER INSERT ON email_folder
@@ -80,6 +80,6 @@ DELIMITER ;
    ```
    
 ## finally
-   you need a worker thread to rpop the redis list to get the newly modified data to update the redis cache.
+   you need a worker thread to rpop the redis list to get the newly modified data and update the redis cache.
 
    
