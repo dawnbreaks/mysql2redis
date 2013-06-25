@@ -7,7 +7,7 @@ mysql2redis
 
    When you use redis to cache data only(not persistent), you will face the issue that how to sync the newly modified data from mysql to the redis cache? This project aims to provide a high performance and stable redis udf to solve this issue.
    
-## dependencies
+## Dependencies
    please download the dependencies below and compile/install it properly :
    
   * jemalloc(http://www.canonware.com/jemalloc/)
@@ -17,13 +17,13 @@ mysql2redis
   * lib_mysqludf_json(https://github.com/mysqludf/lib_mysqludf_json)
    
    
-## compile  
+## Compile  
    run  make from the src dir directly.
   ```
   make
   ```
    
-## install redis udf  
+## Install redis udf  
   please make sure that  the lib_mysqludf_redis_v2.so has been put into the mysql plugin dir. By the way, you can examine where is the mysql plugin dir by run '''
   mysql_config  --plugindir
   '''. and then connect to your mysql server, run the following command to install the the redis udf.
@@ -37,7 +37,7 @@ CREATE FUNCTION redis_command_v2 RETURNS int SONAME "lib_mysqludf_redis_v2.so";
 CREATE FUNCTION free_resources RETURNS int SONAME "lib_mysqludf_redis_v2.so";
   ```
   
-## test redis udf  
+## Test redis udf  
    connect to your mysql server, run the following command to test the the redis udf.
 ```sql
 select redis_command_v2("192.168.0.118",6379,"lpush","crmInboxEvents11",json_object(json_members("op","insert","value","valuettt")));
@@ -49,7 +49,7 @@ select free_resources();
 select redis_servers_set_v2("192.168.0.118",6379);
 ```
 
-## what's more
+## What's more
    you should create a trigger which will lpush the newly modified data to redis list juste as the following  example:
    ```sql
 DELIMITER $$
@@ -79,7 +79,9 @@ CREATE TRIGGER insert_trigger AFTER INSERT ON email_folder
 DELIMITER ;
    ```
    
-## finally
+## Finally
    you need a worker thread to rpop the redis list to get the newly modified data and update the redis cache.
 
    
+## Performance test
+   In my poor labtop, 10,000 row data were put into redis in 0.4 second.
