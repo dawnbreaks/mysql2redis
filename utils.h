@@ -13,7 +13,7 @@ unsigned int check_host(const char* host);
  * check the given string whether a valid ip address
  *
  * @return 0 not a valid ip address
- *         1 yes
+ *         1 yes 
  */
 unsigned int check_ip(const char*ip);
 
