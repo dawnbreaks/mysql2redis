@@ -1,7 +1,12 @@
 mysql2redis
 ==========
 
-## 
+## STATUS
+draft
+
+## MAIN FUNCTIONS
+This doc tells users how to install mysql2redis in linux env.
+
 ## INSTALL DEPS
 * sudo apt-get install libjemalloc1 libjemalloc-dev
   or source download install
