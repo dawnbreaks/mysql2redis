@@ -5,10 +5,10 @@
 #include "lib_mysqludf_redis.h"
 
 static struct config cfg = {
-	.tcp = {
-		.host = "192.168.0.118",
-		.port = 6379
-	},
+    .tcp = {
+	.host = "192.168.0.118",
+	.port = 6379
+    },
     .unix_sock = {
     	.path = "/tmp/redis.sock"
      },
@@ -23,51 +23,51 @@ static struct config cfg = {
 
 void split(char *str, char **splitstr) {
 
-	char *p;
-	int i = 0;
+    char *p;
+    int i = 0;
 
-	p = strtok(str, "\n");
-	while (p != NULL) {
+    p = strtok(str, "\n");
+    while (p != NULL) {
 		// printf("%s", p);
-		splitstr[i] = malloc(strlen(p) + 1);
-		if (splitstr[i])
-			strcpy(splitstr[i], p);
-		i++;
-		p = strtok(NULL, ",");
-	}
+	splitstr[i] = malloc(strlen(p) + 1);
+	if (splitstr[i])
+	    strcpy(splitstr[i], p);
+	i++;
+	p = strtok(NULL, ",");
+    }
 }
 
 
 
 void check_error(apr_status_t rv) {
     if (rv != APR_SUCCESS) {
-		char buf[512], ebuf[256];
-		sprintf(buf, "(%d): %s\n", rv, apr_strerror(rv, ebuf, sizeof ebuf));
-		debug_print(buf);
-	}
+	char buf[512], ebuf[256];
+	sprintf(buf, "(%d): %s\n", rv, apr_strerror(rv, ebuf, sizeof ebuf));
+	debug_print(buf);
+    }
 }
 //apr initialization and destroy.
 void deinitialize_apr(void) {
-	apr_status_t rv;
-	if(queue) {
-		rv =apr_queue_term(queue);
-		check_error(rv);
-	}
-	if(thrp) {
-		apr_thread_pool_destroy(thrp);
-		check_error(rv);
-	}
-	if(mem_pool) {
-		apr_pool_destroy(mem_pool);
-		check_error(rv);
-	}
+    apr_status_t rv;
+    if(queue) {
+	rv =apr_queue_term(queue);
+	check_error(rv);
+    }
+    if(thrp) {
+    	apr_thread_pool_destroy(thrp);
+	check_error(rv);
+    }
+    if(mem_pool) {
+	apr_pool_destroy(mem_pool);
+	check_error(rv);
+    }
 
 
-	apr_terminate();
+    apr_terminate();
 
-	queue = NULL;
-	thrp = NULL;
-	mem_pool = NULL;
+    queue = NULL;
+    thrp = NULL;
+    mem_pool = NULL;
 }
 void initialize_apr(void) {
 
@@ -204,16 +204,16 @@ redisContext *_myredisConnect(struct config config) {
 
     if (c->err && pFile) {
     	info_print("Connection error: %s\n", c->errstr);
-		return c;
+	return c;
     }
 
 
     /* Authenticate */
     if (config.auth) {
-       reply = redisCommand(c,"AUTH %s",config.password);
-	   if(reply) {
-		freeReplyObject(reply);
-	   }
+        reply = redisCommand(c,"AUTH %s",config.password);
+        if(reply) {
+            freeReplyObject(reply);
+	}
     }
     return c;
 }
@@ -327,41 +327,41 @@ my_ulonglong redis_servers_set_v2(UDF_INIT *initid, UDF_ARGS *args, char *is_nul
  *
  */
 my_bool redis_command_v2_init(
-	UDF_INIT *initid __attribute__((__unused__)),
-	UDF_ARGS *args,
-	char *message
+    UDF_INIT *initid __attribute__((__unused__)),
+    UDF_ARGS *args,
+    char *message
 ){
-	if(
-		args->arg_type[0]==STRING_RESULT &&
-		args->arg_type[1]==INT_RESULT &&
-		args->arg_type[2]==STRING_RESULT
-	  )
-	{
+    if(
+	args->arg_type[0]==STRING_RESULT &&
+	args->arg_type[1]==INT_RESULT &&
+	args->arg_type[2]==STRING_RESULT
+    )
+    {
 
-		args->maybe_null = 0; // each parameter could not be NULL
+	args->maybe_null = 0; // each parameter could not be NULL
 
-		char *host = args->args[0];
-		unsigned long host_len = args->lengths[0];
-		long long port = *((long long*)args->args[1]);
+	char *host = args->args[0];
+	unsigned long host_len = args->lengths[0];
+	long long port = *((long long*)args->args[1]);
 
-		char *cmd = args->args[2];
-		if(port < 0) {
-			snprintf(message,MYSQL_ERRMSG_SIZE,
+	char *cmd = args->args[2];
+	if(port < 0) {
+	    snprintf(message,MYSQL_ERRMSG_SIZE,
 				"The second parameter must be an integer bigger than zero");
-			return 2;
-		}
-
-		if(strlen(cmd) <=0 || NULL == cmd) {
-			snprintf(message,MYSQL_ERRMSG_SIZE,"The third parameter error,[%s]\n",cmd);
-			return 2;
-		}
-		// everthing looks OK.
-		return 0;
-		
-	} else {
-		snprintf(message,MYSQL_ERRMSG_SIZE,	"redis_command(host,port,command1,command2,..) Expected exactly 3+ parameteres, a string, an integer and a string(s)" );
-		return 1;
+	    return 2;
 	}
+
+	if(strlen(cmd) <=0 || NULL == cmd) {
+	    snprintf(message,MYSQL_ERRMSG_SIZE,"The third parameter error,[%s]\n",cmd);
+	    return 2;
+	}
+	// everthing looks OK.
+	return 0;
+		
+    } else {
+	snprintf(message,MYSQL_ERRMSG_SIZE,	"redis_command(host,port,command1,command2,..) Expected exactly 3+ parameteres, a string, an integer and a string(s)" );
+	return 1;
+    }
 
 }
 void redis_command_v2_deinit(UDF_INIT *initid __attribute__((__unused__))){
@@ -370,34 +370,33 @@ void redis_command_v2_deinit(UDF_INIT *initid __attribute__((__unused__))){
 
 
 my_ulonglong redis_command_v2(
-		UDF_INIT *initid __attribute__((__unused__)),
-		UDF_ARGS *args,
-		char *is_null __attribute__((__unused__)),
-		char *error __attribute__((__unused__)))
+    UDF_INIT *initid __attribute__((__unused__)),
+    UDF_ARGS *args,
+    char *is_null __attribute__((__unused__)),
+    char *error __attribute__((__unused__)))
 {
 
 	//__unused__   paras
-	char *hostorfile = args->args[0];
-	long long port = *((long long*)args->args[1]);
+    char *hostorfile = args->args[0];
+    long long port = *((long long*)args->args[1]);
 
-	
-	apr_status_t status;
-
-	if(queue) {
+    apr_status_t status;
+    
+    if(queue) {
 //		apr_status_t status;
-		struct redis_command* command = malloc(sizeof(struct redis_command));
-		command->value = malloc(args->lengths[4]);//allocate value mem.
+	struct redis_command* command = malloc(sizeof(struct redis_command));
+	command->value = malloc(args->lengths[4]);//allocate value mem.
 
-		memcpy(command->cmd,args->args[2],args->lengths[2]);//cmd
-		memcpy(command->key,args->args[3],args->lengths[3]);//key
-		memcpy(command->value,args->args[4],args->lengths[4]);//value
-		command->length[0] = args->lengths[2];
-		command->length[1] = args->lengths[3];
-		command->length[2] = args->lengths[4];
+	memcpy(command->cmd,args->args[2],args->lengths[2]);//cmd
+	memcpy(command->key,args->args[3],args->lengths[3]);//key
+	memcpy(command->value,args->args[4],args->lengths[4]);//value
+	command->length[0] = args->lengths[2];
+	command->length[1] = args->lengths[3];
+	command->length[2] = args->lengths[4];
 
-		apr_status_t status = apr_queue_trypush(queue, (void*)command);
-		check_error(status);
-	}
+	apr_status_t status = apr_queue_trypush(queue, (void*)command);
+	check_error(status);
+    }
 
     if (!queue || status != APR_SUCCESS  ) {   //send event directly.
 
