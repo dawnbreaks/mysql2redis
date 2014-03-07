@@ -9,8 +9,7 @@ mysql2redis
    
 ## Dependencies
    please download the dependencies below and compile/install it properly :
-   
-  * jemalloc(http://www.canonware.com/jemalloc/)
+ 
   * apr-1.4.6(http://apr.apache.org/download.cgi)
   * apr-util-1.5.2(http://apr.apache.org/download.cgi)
   * hiredis(https://github.com/redis/hiredis)
