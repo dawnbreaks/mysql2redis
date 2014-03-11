@@ -65,10 +65,9 @@ extern "C" {
 
 
 struct redis_command{
-	char cmd[256];
-	char key[256];
-	char* value;
-	size_t length[3];
+	size_t arg_count;		/* Number of arguments */
+	char **argv;				/* Pointer to argument */
+	size_t *argvlen;			/* lengths of arguments */
 };
 
 enum conn_type {
@@ -97,7 +96,7 @@ struct config {
 /* Redis connection mutex */
 static pthread_mutex_t sredisContext_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Redis Connection object */
+/* Redis Connection context */
 static redisContext *sredisContext = NULL;
 
 
@@ -196,7 +195,7 @@ redisContext *_redis_context_init();
 redisContext *_redis_context_reinit();
 void _redis_context_deinit();
 
-long long _do_redis_command(const char** args, const size_t * argvlen);
+long long _do_redis_command(const char** args, const size_t * argvlen, size_t arg_count);
 
 
 

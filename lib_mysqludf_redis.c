@@ -88,8 +88,13 @@ void initialize_apr(void) {
 
 void free_command(struct redis_command *cmd) {
     if(cmd) {
-	 free(cmd->value);
-		  free(cmd);
+    	int i=0;
+    	for(;i<cmd->arg_count;i++){
+    		free(cmd->argv[i]);
+    	}
+    	free(cmd->argv);
+    	free(cmd->argvlen);
+		free(cmd);
     }
 }
 
@@ -98,7 +103,7 @@ void * APR_THREAD_FUNC consumer(apr_thread_t *thd, void *data) {
     apr_status_t rv;
     struct redis_command *command = NULL;
 
-    info_print("enter: consumer thread");
+    info_print("enter: consumer thread\n");
 
     while (1) {
         rv = apr_queue_pop(queue, (void **)&command);
@@ -107,7 +112,7 @@ void * APR_THREAD_FUNC consumer(apr_thread_t *thd, void *data) {
             continue;
 
         if (rv == APR_EOF) {
-    	    info_print("queue has terminated, consumer thread exit");
+    	    info_print("queue has terminated, consumer thread exit\n");
             break;
         }
 
@@ -117,31 +122,25 @@ void * APR_THREAD_FUNC consumer(apr_thread_t *thd, void *data) {
         }
 
         if(command) {
-            char *argv[3]; // = { "rpush %s %s", "TEST", "yippie" }
-            argv[0] = command->cmd;//cmd
-            argv[1] = command->key;//para1
-            argv[2] = command->value;//para2
-
-            int res = _do_redis_command((const char **)argv,(const size_t *)command->length);
-
+            int res = _do_redis_command((const char **)command->argv,(const size_t *)command->argvlen, command->arg_count);
             free_command(command);
             command = NULL;
         }
     }
 
-    info_print("exit:consumer thread");
+    info_print("exit:consumer thread\n");
     return NULL;
 }
 
 int start_consumer_worker(void) {
     apr_status_t rv = -1;
     if(!mem_pool && !thrp) {
-	initialize_apr();
+    	initialize_apr();
 
-	rv = apr_thread_pool_push(thrp, consumer, NULL, 0, NULL);
-	check_error(rv);
+    	rv = apr_thread_pool_push(thrp, consumer, NULL, 0, NULL);
+    	check_error(rv);
 
-	info_print("start_consumer_worker: initialize_apr,apr_thread_pool_push|rv= %d\n",rv);
+    	info_print("start_consumer_worker: initialize_apr,apr_thread_pool_push|rv= %d\n",rv);
     }
 }
 
@@ -153,7 +152,7 @@ int start_consumer_worker(void) {
 redisContext *_redis_context_init() {
     if (!sredisContext) {
 	sredisContext = _myredisConnect(cfg);
-	info_print("try to connect to redis db ");
+	info_print("try to connect to redis db \n");
     }
     if (!sredisContext) {
        return NULL;
@@ -167,7 +166,7 @@ redisContext *_redis_context_reinit() {
     	sredisContext = _myredisConnect(cfg);
     }
     else {
-    	info_print("try to reconnect to redis db ");
+    	info_print("try to reconnect to redis db \n");
 
     	redisFree(sredisContext);
     	sredisContext = NULL;
@@ -222,7 +221,7 @@ redisContext *_myredisConnect(struct config config) {
 
 
 
-long long _do_redis_command( const char ** args,const size_t * argvlen) {
+long long _do_redis_command( const char ** args,const size_t * argvlen, size_t arg_count) {
 
     pthread_mutex_lock(&sredisContext_mutex);
 
@@ -239,7 +238,7 @@ long long _do_redis_command( const char ** args,const size_t * argvlen) {
 
     debug_print("%s %s %s\n",args[0] ,args[1],args[2]);
 
-    reply =  redisCommandArgv(c,3,args,argvlen);
+    reply =  redisCommandArgv(c,arg_count,args,argvlen);
     if(!reply) {
 
     	c = (redisContext*)_redis_context_reinit();
@@ -248,7 +247,7 @@ long long _do_redis_command( const char ** args,const size_t * argvlen) {
             pthread_mutex_unlock(&sredisContext_mutex);
             return -1;
         }
-    	reply = redisCommandArgv(c,3,args,argvlen);
+    	reply = redisCommandArgv(c,arg_count,args,argvlen);
         if (!reply) {
             info_print("_do_redis_command, reconnect to redis and re-execute redisCommandArgv failed\n ");
             pthread_mutex_unlock(&sredisContext_mutex);
@@ -332,35 +331,20 @@ my_bool redis_command_v2_init(
     char *message
 ){
     if(
+    args->arg_count>=3 &&
 	args->arg_type[0]==STRING_RESULT &&
-	args->arg_type[1]==INT_RESULT &&
+	args->arg_type[1]==STRING_RESULT &&
 	args->arg_type[2]==STRING_RESULT
     )
     {
 
-	args->maybe_null = 0; // each parameter could not be NULL
+    	args->maybe_null = 0; // each parameter could not be NULL
 
-	char *host = args->args[0];
-	unsigned long host_len = args->lengths[0];
-	long long port = *((long long*)args->args[1]);
-
-	char *cmd = args->args[2];
-	if(port < 0) {
-	    snprintf(message,MYSQL_ERRMSG_SIZE,
-				"The second parameter must be an integer bigger than zero");
-	    return 2;
-	}
-
-	if(strlen(cmd) <=0 || NULL == cmd) {
-	    snprintf(message,MYSQL_ERRMSG_SIZE,"The third parameter error,[%s]\n",cmd);
-	    return 2;
-	}
-	// everthing looks OK.
-	return 0;
-		
+    	// everthing looks OK.
+    	return 0;
     } else {
-	snprintf(message,MYSQL_ERRMSG_SIZE,	"redis_command(host,port,command1,command2,..) Expected exactly 3+ parameteres, a string, an integer and a string(s)" );
-	return 1;
+    	snprintf(message,MYSQL_ERRMSG_SIZE,	"redis_command(cmd,arg1,arg2,..) Expected exactly 3+ string parameteres" );
+    	return 1;
     }
 
 }
@@ -375,43 +359,32 @@ my_ulonglong redis_command_v2(
     char *is_null __attribute__((__unused__)),
     char *error __attribute__((__unused__)))
 {
-
-	//__unused__   paras
-    char *hostorfile = args->args[0];
-    long long port = *((long long*)args->args[1]);
-
     apr_status_t status;
     
-    if(queue) {
-//		apr_status_t status;
 	struct redis_command* command = malloc(sizeof(struct redis_command));
-	command->value = malloc(args->lengths[4]);//allocate value mem.
+	command->argv = malloc(args->arg_count*sizeof(void*));//allocate argv mem.
+	command->argvlen = malloc(args->arg_count*sizeof(size_t));//allocate argvlen mem.
+	command->arg_count = args->arg_count;
 
-	memcpy(command->cmd,args->args[2],args->lengths[2]);//cmd
-	memcpy(command->key,args->args[3],args->lengths[3]);//key
-	memcpy(command->value,args->args[4],args->lengths[4]);//value
-	command->length[0] = args->lengths[2];
-	command->length[1] = args->lengths[3];
-	command->length[2] = args->lengths[4];
+//	info_print("NUMBER OF ARGS %d\n",args->arg_count);
 
-	apr_status_t status = apr_queue_trypush(queue, (void*)command);
-	check_error(status);
+	int i=0;
+	for(;i<args->arg_count;i++){
+		command->argv[i] = malloc(args->lengths[i]);
+		memcpy(command->argv[i],args->args[i],args->lengths[i]);
+		command->argvlen[i] = args->lengths[i];
+	}
+
+    if(queue) {
+    	apr_status_t status = apr_queue_trypush(queue, (void*)command);
+    	check_error(status);
     }
 
     if (!queue || status != APR_SUCCESS  ) {   //send event directly.
 
-    	char *argv[3]; // = { "rpush %s %s", "TEST", "yippie" }
-    	argv[0] =  args->args[2];//cmd
-    	argv[1] =  args->args[3];//key
-        argv[2] =  args->args[4];//value
-
-    	size_t argvlen[3];
-    	argvlen[0] = args->lengths[2];
-    	argvlen[1] = args->lengths[3];
-    	argvlen[2] = args->lengths[4];
-
-    	return _do_redis_command((const char **)argv,(const size_t *)argvlen);
-
+    	long long res = _do_redis_command((const char **)command->argv,(const size_t *)command->argvlen, command->arg_count);
+    	free_command(command);
+    	return res;
      }
 	return 0;
 }

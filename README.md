@@ -39,10 +39,10 @@ CREATE FUNCTION free_resources RETURNS int SONAME "lib_mysqludf_redis_v2.so";
 ## Test redis udf  
    connect to your mysql server, run the following command to test the the redis udf.
 ```sql
-select redis_command_v2("192.168.0.118",6379,"lpush","crmInboxEvents11",json_object(json_members("op","insert","value","valuettt")));
+select redis_command_v2("lpush","crmInboxEvents11",json_object(json_members("op","insert","value","valuettt")));
 
 select redis_servers_set_v2("192.168.0.118",6379);
-select redis_command_v2("192.168.0.118",6379,"lpush","crmInboxEvents11",json_object(json_members("op","insert","value","valuettt")));
+select redis_command_v2("lpush","crmInboxEvents11",json_object(json_members("op","insert","value","valuettt")));
 
 select free_resources();
 select redis_servers_set_v2("192.168.0.118",6379);
@@ -55,7 +55,7 @@ DELIMITER $$
 CREATE TRIGGER insert_trigger AFTER INSERT ON email_folder
   FOR EACH ROW BEGIN
     SET @ret=
-     	 redis_command_v2("192.168.0.118",6379,"lpush","crmInboxEvents",
+     	 redis_command_v2("lpush","crmInboxEvents",
 							  json_object
                               (
 							    	json_members
