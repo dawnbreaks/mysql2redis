@@ -44,6 +44,9 @@ select redis_command_v2("lpush","crmInboxEvents11",json_object(json_members("op"
 select redis_servers_set_v2("192.168.0.118",6379);
 select redis_command_v2("lpush","crmInboxEvents11",json_object(json_members("op","insert","value","valuettt")));
 
+select redis_command_v2("hset","hkey","hfield",json_object(json_members("op","insert","value","valuettt")));
+
+
 select free_resources();
 select redis_servers_set_v2("192.168.0.118",6379);
 ```
