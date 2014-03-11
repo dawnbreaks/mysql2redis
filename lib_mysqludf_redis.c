@@ -98,7 +98,7 @@ void * APR_THREAD_FUNC consumer(apr_thread_t *thd, void *data) {
     apr_status_t rv;
     struct redis_command *command = NULL;
 
-    info("enter: consumer thread");
+    info_print("enter: consumer thread");
 
     while (1) {
         rv = apr_queue_pop(queue, (void **)&command);
@@ -107,7 +107,7 @@ void * APR_THREAD_FUNC consumer(apr_thread_t *thd, void *data) {
             continue;
 
         if (rv == APR_EOF) {
-    	    info("queue has terminated, consumer thread exit");
+    	    info_print("queue has terminated, consumer thread exit");
             break;
         }
 
