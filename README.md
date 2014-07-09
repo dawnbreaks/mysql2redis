@@ -87,3 +87,7 @@ DELIMITER ;
    
 ## Performance test
    In my poor labtop, 10,000 row data were synced into redis in 0.4 second.
+   
+   
+========
+Please feel free to contact me(2005dawnbreaks@gmail.com) if you have any questions.
