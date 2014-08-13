@@ -83,6 +83,7 @@ DELIMITER ;
    
 ## Finally
    Now all update events for that mysql table has been transfer to a redis queue.  You need to start a thread(or process) to handle these update events and update the redis cache properly. 
+   
   For example, you can  start a java process to poll the redis queue , and pop the events,  then handle it and update the redis cache properly.
 
    
