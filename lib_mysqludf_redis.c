@@ -333,7 +333,7 @@ my_bool redis_command_v2_init(
     if(
     args->arg_count>=2 &&
 	args->arg_type[0]==STRING_RESULT &&
-	args->arg_type[1]==STRING_RESULT &&
+	args->arg_type[1]==STRING_RESULT
     )
     {
 
