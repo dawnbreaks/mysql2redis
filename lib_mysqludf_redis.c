@@ -331,10 +331,9 @@ my_bool redis_command_v2_init(
     char *message
 ){
     if(
-    args->arg_count>=3 &&
+    args->arg_count>=2 &&
 	args->arg_type[0]==STRING_RESULT &&
 	args->arg_type[1]==STRING_RESULT &&
-	args->arg_type[2]==STRING_RESULT
     )
     {
 
@@ -343,7 +342,7 @@ my_bool redis_command_v2_init(
     	// everthing looks OK.
     	return 0;
     } else {
-    	snprintf(message,MYSQL_ERRMSG_SIZE,	"redis_command(cmd,arg1,arg2,..) Expected exactly 3+ string parameteres" );
+    	snprintf(message,MYSQL_ERRMSG_SIZE,	"redis_command(cmd,arg1,arg2,..) Expected at least 2 string parameteres" );
     	return 1;
     }
 
