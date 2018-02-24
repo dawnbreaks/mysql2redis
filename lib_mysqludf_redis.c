@@ -43,7 +43,7 @@ void check_error(apr_status_t rv) {
     if (rv != APR_SUCCESS) {
 	char buf[512], ebuf[256];
 	sprintf(buf, "(%d): %s\n", rv, apr_strerror(rv, ebuf, sizeof ebuf));
-	debug_print(buf);
+	debug_print("%s\n", buf);
     }
 }
 //apr initialization and destroy.
