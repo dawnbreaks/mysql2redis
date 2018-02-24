@@ -37,6 +37,7 @@ typedef long long longlong;
 /**
  * mysql head file
  */
+#define MYSQL_ABI_CHECK
 #include <mysql/plugin.h>
 
 
